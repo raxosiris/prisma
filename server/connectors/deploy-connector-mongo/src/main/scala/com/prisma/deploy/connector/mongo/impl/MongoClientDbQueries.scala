@@ -44,7 +44,7 @@ case class MongoClientDbQueries(project: Project, clientDatabase: MongoClient)(i
           `match`(notEqual(field.dbName, null)),
           group(s"$$${field.dbName}", sum("count", 1)),
           `match`(gt("count", 1)),
-          mongoProjection(include("_id")),
+          mongoProjection(include("id")),
           limit(1)
         )
       )

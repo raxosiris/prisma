@@ -45,7 +45,7 @@ object GCBisonTransformer {
 
 object NodeSelectorBsonTransformer {
   implicit def whereToBson(where: NodeSelector): Bson = {
-    val fieldName = if (where.field.isId) "_id" else where.field.dbName
+    val fieldName = if (where.field.isId) "id" else where.field.dbName
     val value     = GCToBson(where.fieldGCValue)
 
     Filters.eq(fieldName, value)
@@ -108,7 +108,7 @@ trait MongoResultReader {
     PrismaNodeWithParent(id, PrismaNode(root.idFieldByName(model.idField_!.name), root, Some(model.name)))
   }
 
-  def readsId(document: Document): IdGCValue = StringIdGCValue(document("_id").asObjectId().getValue.toString)
+  def readsId(document: Document): IdGCValue = StringIdGCValue(document("id").asObjectId().getValue.toString)
 }
 
 object DocumentToRoot {
@@ -124,7 +124,7 @@ object DocumentToRoot {
       nonReservedFields.map(field => field.name -> document.get(field.dbName).map(v => BisonToGC(field, v)).getOrElse(NullGCValue))
 
     val id: (String, GCValue) =
-      document.get("_id").map(v => model.idField_!.name -> BisonToGC(model.idField_!, v)).getOrElse(model.idField_!.name -> StringIdGCValue.dummy)
+      document.get("id").map(v => model.idField_!.name -> BisonToGC(model.idField_!, v)).getOrElse(model.idField_!.name -> StringIdGCValue.dummy)
 
     val scalarList: List[(String, GCValue)] =
       scalarListFields.map(field => field.name -> document.get(field.dbName).map(v => BisonToGC(field, v)).getOrElse(ListGCValue.empty))
@@ -163,15 +163,15 @@ object FieldCombinators {
   def dotPath(path: String, field: Field): String = (path, field) match {
     case ("", rf: RelationField)   => rf.dbName
     case (path, rf: RelationField) => path + "." + rf.dbName
-    case ("", sf: ScalarField)     => if (sf.isId) "_id" else sf.dbName
-    case (path, sf: ScalarField)   => path + "." + (if (sf.isId) "_id" else sf.dbName)
+    case ("", sf: ScalarField)     => if (sf.isId) "id" else sf.dbName
+    case (path, sf: ScalarField)   => path + "." + (if (sf.isId) "id" else sf.dbName)
   }
 
   def combineTwo(path: String, field: String): String = if (path == "") field else path + "." + field
 }
 
 object HackforTrue {
-  val hackForTrue = notEqual("_id", -1)
+  val hackForTrue = notEqual("id", -1)
 }
 
 object ArrayFilter extends FilterConditionBuilder {
@@ -192,5 +192,5 @@ object ArrayFilter extends FilterConditionBuilder {
       Vector(buildConditionForScalarFilter(path.operatorName(rf, whereFilter), whereFilter)) ++ arrayFilter(path.dropLast)
   }
 
-  def fieldName(where: NodeSelector): String = if (where.field.isId) "_id" else where.field.dbName
+  def fieldName(where: NodeSelector): String = if (where.field.isId) "id" else where.field.dbName
 }

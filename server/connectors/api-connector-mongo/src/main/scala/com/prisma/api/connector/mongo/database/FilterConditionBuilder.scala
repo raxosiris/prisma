@@ -74,12 +74,12 @@ trait FilterConditionBuilder {
 
   }
 
-  def renameId(field: ScalarField): String = if (field.isId) "_id" else field.dbName
+  def renameId(field: ScalarField): String = if (field.isId) "id" else field.dbName
 
   private def nonEmptyConditions(path: String, filters: Vector[Filter], negate: Boolean): Vector[conversions.Bson] =
     filters.map(f => buildConditionForFilter(path, f, negate)) match {
       case x if x.isEmpty && path == "" => Vector(hackForTrue)
-      case x if x.isEmpty               => Vector(notEqual(s"$path._id", -1))
+      case x if x.isEmpty               => Vector(notEqual(s"$path.id", -1))
       case x                            => x
     }
 

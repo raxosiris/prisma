@@ -21,7 +21,7 @@ case class Path(segments: List[PathSegment]) {
     //Mongo only allows alphanumeric characters in arrayfilter names and they have to start with lowercase
     val alphanumeric = input
       .replace("-", "M") // for the minus in hash value
-      .replace("_", "X") // for the _ in _id
+      .replace("_", "X") // for the _ in id
 
     "x" + alphanumeric
   }

@@ -34,7 +34,7 @@ trait NodeActions extends NodeSingleQueries {
   def deleteNodeById(model: Model, id: IdGCValue) = deleteNodes(model, Vector(id))
 
   def deleteNodes(model: Model, ids: Seq[IdGCValue]) = SimpleMongoAction { database =>
-    database.getCollection(model.dbName).deleteMany(in("_id", ids.map(x => GCToBson(x)): _*)).toFuture()
+    database.getCollection(model.dbName).deleteMany(in("id", ids.map(x => GCToBson(x)): _*)).toFuture()
   }
 
   def updateNode(mutaction: TopLevelUpdateNode)(implicit ec: ExecutionContext): MongoAction[MutactionResults] = {
@@ -92,7 +92,7 @@ trait NodeActions extends NodeSingleQueries {
     val scalarUpdates   = scalarUpdateValues(mutaction, nodeAddress)
     val combinedUpdates = CustomUpdateCombiner.customCombine(scalarUpdates)
 
-    database.getCollection(mutaction.model.dbName).updateMany(in("_id", ids.map(x => GCToBson(x)): _*), combinedUpdates).toFuture()
+    database.getCollection(mutaction.model.dbName).updateMany(in("id", ids.map(x => GCToBson(x)): _*), combinedUpdates).toFuture()
   }
 
   //endregion
@@ -123,7 +123,7 @@ trait NodeActions extends NodeSingleQueries {
       case (_, _)                            => NodeAddress.forId(mutaction.model, id)
     }
 
-    val nonListArgsWithId                  = nonListValues.filter(p => p._1 != mutaction.model.idField_!.dbName) :+ ("_id", id)
+    val nonListArgsWithId                  = nonListValues.filter(p => p._1 != mutaction.model.idField_!.dbName) :+ ("id", id)
     val (nestedCreateFields, childResults) = embeddedNestedCreateDocsAndResults(mutaction, currentParent)
     val doc                                = Document(nonListArgsWithId ++ listValues ++ inlineRelations) ++ nestedCreateFields
 

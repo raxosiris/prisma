@@ -12,7 +12,7 @@ trait ProjectionBuilder {
   val idProjectionStage              = project(idProjection)
 
   def projectSelected(selectedFields: SelectedFields): conversions.Bson = {
-    val scalarFields              = selectedFields.scalarFields.filterNot(_.isId).map(_.dbName).toVector :+ "_id"
+    val scalarFields              = selectedFields.scalarFields.filterNot(_.isId).map(_.dbName).toVector :+ "id"
     val embeddedRelationFields    = helper(selectedFields.relationalSelectedFields.filter(x => x.field.relatedModel_!.isEmbedded))
     val nonEmbeddedRelationFields = selectedFields.relationalSelectedFields.filterNot(x => x.field.relatedModel_!.isEmbedded).map(_.field.dbName)
 
@@ -22,7 +22,7 @@ trait ProjectionBuilder {
   private def helper(fields: Set[SelectedRelationField], prefix2: String = ""): Vector[String] = {
     fields.flatMap { selected =>
       val prefix    = combineTwo(prefix2, selected.field.dbName)
-      val scalars   = selected.selectedFields.scalarFields.filterNot(_.isId).map(x => combineTwo(prefix, x.dbName)).toVector :+ combineTwo(prefix, "_id")
+      val scalars   = selected.selectedFields.scalarFields.filterNot(_.isId).map(x => combineTwo(prefix, x.dbName)).toVector :+ combineTwo(prefix, "id")
       val embeddeds = helper(selected.selectedFields.relationalSelectedFields.filter(x => x.field.relatedModel_!.isEmbedded), prefix)
       val nonEmbeddeds =
         selected.selectedFields.relationalSelectedFields.filterNot(x => x.field.relatedModel_!.isEmbedded).map(x => combineTwo(prefix, x.field.dbName))

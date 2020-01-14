@@ -21,7 +21,7 @@ object CursorConditionBuilder {
     // If both params are empty, don't generate any query.
     if (before.isEmpty && after.isEmpty) return Future.successful(None)
 
-    val orderByDBName = orderBy.map(_.field.dbName).getOrElse("_id")
+    val orderByDBName = orderBy.map(_.field.dbName).getOrElse("id")
     val orderByName   = orderBy.map(_.field.name).getOrElse(model.idField_!.name)
 
     val value: IdGCValue = before match {
@@ -32,7 +32,7 @@ object CursorConditionBuilder {
     val cursor = GCToBson(value.asInstanceOf[StringIdGCValue])
     import org.mongodb.scala.model.Projections._
     for {
-      res            <- database.getCollection(model.dbName).find(Filters.eq("_id", cursor)).projection(include(orderByDBName)).collect().toFuture()
+      res            <- database.getCollection(model.dbName).find(Filters.eq("id", cursor)).projection(include(orderByDBName)).collect().toFuture()
       docOption      = res.headOption
       rootOption     = docOption.map(doc => DocumentToRoot(model, doc))
       rowValueOption = rootOption.map(root => root.map(orderByName))
@@ -43,7 +43,7 @@ object CursorConditionBuilder {
     val (before, after, orderBy) = (queryArguments.before, queryArguments.after, queryArguments.orderBy)
     val (orderByField: String, sortOrder: SortOrder) = orderBy match {
       case Some(order) => (order.field.dbName, order.sortOrder)
-      case None        => ("_id", SortOrder.Asc)
+      case None        => ("id", SortOrder.Asc)
     }
 
     val value: IdGCValue = before match {
@@ -56,10 +56,10 @@ object CursorConditionBuilder {
     val cursor = GCToBson(value.asInstanceOf[StringIdGCValue])
 
     def cursorCondition(cursorType: String): conversions.Bson = (cursorType, sortOrder) match {
-      case ("before", SortOrder.Asc)  => or(and(Filters.eq(orderByField, rowVal), lt("_id", cursor)), lt(orderByField, rowVal))
-      case ("before", SortOrder.Desc) => or(and(Filters.eq(orderByField, rowVal), lt("_id", cursor)), gt(orderByField, rowVal))
-      case ("after", SortOrder.Asc)   => or(and(Filters.eq(orderByField, rowVal), gt("_id", cursor)), gt(orderByField, rowVal))
-      case ("after", SortOrder.Desc)  => or(and(Filters.eq(orderByField, rowVal), gt("_id", cursor)), lt(orderByField, rowVal))
+      case ("before", SortOrder.Asc)  => or(and(Filters.eq(orderByField, rowVal), lt("id", cursor)), lt(orderByField, rowVal))
+      case ("before", SortOrder.Desc) => or(and(Filters.eq(orderByField, rowVal), lt("id", cursor)), gt(orderByField, rowVal))
+      case ("after", SortOrder.Asc)   => or(and(Filters.eq(orderByField, rowVal), gt("id", cursor)), gt(orderByField, rowVal))
+      case ("after", SortOrder.Desc)  => or(and(Filters.eq(orderByField, rowVal), gt("id", cursor)), lt(orderByField, rowVal))
       case _                          => throw new IllegalArgumentException
 
     }
